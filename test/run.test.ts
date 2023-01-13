@@ -89,8 +89,7 @@ describe("run", () => {
         async (app) => {
           outputData = await captureLogOutput(async () => {
             app.log.fatal("test");
-            // @ts-expect-error We need to access this private prop for debugging
-          }, app._logger);
+          }, app.log);
         },
         { env }
       );
@@ -111,6 +110,7 @@ describe("run", () => {
       await request(server.expressApp)
         .post("/")
         .send(dataString)
+        .set("Content-type", "application/json")
         .set("x-github-event", "push")
         .set("x-hub-signature-256", await sign("secret", dataString))
         .set("x-github-delivery", "123")
@@ -133,6 +133,7 @@ describe("run", () => {
         await request(server.expressApp)
           .post("/custom-webhook")
           .send(dataString)
+          .set("Content-type", "application/json")
           .set("x-github-event", "push")
           .set("x-hub-signature-256", await sign("secret", dataString))
           .set("x-github-delivery", "123")

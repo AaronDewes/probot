@@ -1,4 +1,4 @@
-import execa from "execa";
+import execa, {type ExecaChildProcess} from 'execa';
 import getPort from "get-port";
 
 import { sign } from "@octokit/webhooks-methods";
@@ -17,7 +17,7 @@ jest.setTimeout(10000);
  */
 describe("end-to-end-tests", () => {
   let server: any;
-  let probotProcess: execa.ExecaChildProcess<string> | null;
+  let probotProcess: ExecaChildProcess<string> | null;
   let probotPort: number;
   let mockServerPort: number;
 

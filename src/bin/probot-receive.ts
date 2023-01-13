@@ -5,8 +5,8 @@ import express, { Router } from "express";
 require("dotenv").config();
 
 import path from "path";
-import { v4 as uuidv4 } from "uuid";
-import program from "commander";
+import { randomUUID } from "crypto";
+import {program} from "commander";
 import { getPrivateKey } from "@probot/get-private-key";
 import { getLog } from "../helpers/get-log";
 
@@ -72,35 +72,38 @@ async function main() {
         : "https://api.github.com"
     )
     .parse(process.argv);
+  
 
-  const githubToken = program.token;
+  const cliOptions = program.opts();
 
-  if (!program.event || !program.payloadPath) {
+  const githubToken = cliOptions.token;
+
+  if (!cliOptions.event || !cliOptions.payloadPath) {
     program.help();
   }
 
   const privateKey = getPrivateKey();
-  if (!githubToken && (!program.app || !privateKey)) {
+  if (!githubToken && (!cliOptions.app || !privateKey)) {
     console.warn(
       "No token specified and no certificate found, which means you will not be able to do authenticated requests to GitHub"
     );
   }
 
-  const payload = require(path.resolve(program.payloadPath));
+  const payload = require(path.resolve(cliOptions.payloadPath));
   const log = getLog({
-    level: program.logLevel,
-    logFormat: program.logFormat,
-    logLevelInString: program.logLevelInString,
-    logMessageKey: program.logMessageKey,
-    sentryDsn: program.sentryDsn,
+    level: cliOptions.logLevel,
+    logFormat: cliOptions.logFormat,
+    logLevelInString: cliOptions.logLevelInString,
+    logMessageKey: cliOptions.logMessageKey,
+    sentryDsn: cliOptions.sentryDsn,
   });
 
   const probot = new Probot({
-    appId: program.app,
+    appId: cliOptions.app,
     privateKey: String(privateKey),
     githubToken: githubToken,
     log,
-    baseUrl: program.baseUrl,
+    baseUrl: cliOptions.baseUrl,
   });
 
   const expressApp = express();
@@ -117,8 +120,8 @@ async function main() {
   );
   await probot.load(appFn, options);
 
-  probot.log.debug("Receiving event", program.event);
-  probot.receive({ name: program.event, payload, id: uuidv4() }).catch(() => {
+  probot.log.debug("Receiving event", cliOptions.event);
+  probot.receive({ name: cliOptions.event, payload, id: randomUUID() }).catch(() => {
     // Process must exist non-zero to indicate that the action failed to run
     process.exit(1);
   });

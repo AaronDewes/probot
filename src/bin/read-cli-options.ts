@@ -1,4 +1,4 @@
-import program from "commander";
+import {program} from "commander";
 import { getPrivateKey } from "@probot/get-private-key";
 import { Options as PinoOptions } from "@probot/pino";
 
@@ -72,17 +72,19 @@ export function readCliOptions(
     )
     .parse(argv);
 
+  const cliOptions = program.opts();
   const {
     app: appId,
     privateKey: privateKeyPath,
     redisUrl,
     ...options
-  } = program;
+  } = cliOptions;
 
   return {
     privateKey: getPrivateKey({ filepath: privateKeyPath }) || undefined,
     appId,
     redisConfig: redisUrl,
+    args: program.args,
     ...options,
   };
 }
